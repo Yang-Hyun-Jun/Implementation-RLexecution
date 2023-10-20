@@ -8,6 +8,9 @@ from buffer import Buffer
 from simulator import Simulator
 
 class Agent:
+    """
+    DQN Agent
+    """
     def __init__(self, s_dim, a_dim):
         
         self.buffer = Buffer(5000)
@@ -21,7 +24,9 @@ class Agent:
         self.opt = torch.optim.Adam(self.qnet.parameters(), lr=1e-4)
 
     def update(self, s, a, r, ns, done):
-
+        """
+        Q learning style update
+        """
         with torch.no_grad():
             q_max, _ = self.qnet_target(ns).max(dim=-1, keepdims=True)
             target = r + 0.99 * q_max * (1-done)
@@ -34,21 +39,27 @@ class Agent:
         return loss.item()
 
     def train(self, config):
-
+        """
+        Train loop
+        """
         episode = config['episode']
         batch_size = config['batch_size']
 
-        for _ in range(episode):
-            sell_money, cum_reward = self.simul.play_horizon(config)
+        score = 0
+        for epi in range(episode):
+            sell_money, cum_reward, eps = self.simul.play_horizon(config)
+            score += 0.01*(sell_money - score)
 
             if len(self.buffer) > batch_size:
                 samples = self.buffer.sample(len(self.buffer))
                 batch = make_batch(samples)
                 loss = self.update(*batch)
 
-                print(loss, cum_reward)
-
-
+                print(f'epi:{epi}')
+                print(f'loss:{loss}')
+                print(f'score:{score}')
+                print(f'eps:{eps}')
+                print(f'cum_reward:{cum_reward} \n')
 
 if __name__ == '__main__':
     s_dim = 23

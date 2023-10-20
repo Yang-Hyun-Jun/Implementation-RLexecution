@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 
 class Qnet(nn.Module):
+    """
+    DQN을 위한 Q network
+    """
     def __init__(self, s_dim, a_dim):
         super().__init__()
 

@@ -7,6 +7,10 @@ from utils import tensorize
 from network import Qnet
 
 class Simulator:
+    """
+    주문 집행 시뮬레이션을 위한 시뮬레이터
+    """
+    eps = 1.0
     def __init__(self, qnet, buffer):
         self.data = pd.read_csv('data.csv', index_col=0)
         self.data['system_time'] = pd.to_datetime(self.data['system_time'])
@@ -14,24 +18,41 @@ class Simulator:
         self.buffer = buffer
 
     def get_reward(self, executed_at_mid, executed_price):
+        """
+        다음의 두 term을 비교하여 reward 계산
+        (1) 같은 체결 수량을 mid price에 체결시켰을 때
+        (2) RL에 의해 체결된 금액
+        """
         gap = executed_price - executed_at_mid
         reward = gap / 1e5
         return reward
 
     def get_state(self, observe):
-        bid_ask_spread = observe['spread']
-        mid_price = observe['midpoint']
-        ask_volumes = [observe[f'ask{i}_v'] for i in range(1, 11)]
-        bid_volumes = [observe[f'bid{i}_v'] for i in range(1, 11)]
+        """
+        [market state]
+        (1) bid-ask spread
+        (2) mid price
+        (3) ask volume
+        (4) bid volume
+        (5) order imbalance
+        """
+        scale = 1e5
+        bid_ask_spread = observe['spread']/scale
+        mid_price = observe['midpoint']/scale
+        ask_volumes = [observe[f'ask{i}_v']/scale for i in range(1, 11)]
+        bid_volumes = [observe[f'bid{i}_v']/scale for i in range(1, 11)]
 
         volumes = ask_volumes + bid_volumes
         ask_volume = sum(ask_volumes)
         bid_volume = sum(bid_volumes)
-        imbalance = bid_volume - ask_volume
+        imbalance = (bid_volume - ask_volume)
         state = [bid_ask_spread, mid_price, imbalance] + volumes
         return state
 
     def get_action(self, state, eps):
+        """
+        epsilon-greedy에 따라 호가 level selection
+        """
         state = torch.tensor(state).float()
         state = torch.unsqueeze(state, 0)
 
@@ -48,6 +69,9 @@ class Simulator:
         return action
 
     def action2level(self, action):
+        """
+        action (index)를 level로 변환 
+        """
         bid_levels = list(range(1, 6))
         ask_levels = list(range(-5, 0))
         levels = bid_levels + ask_levels
@@ -55,6 +79,9 @@ class Simulator:
         return level
 
     def level2action(self, level):
+        """ 
+        level을 action (index)로 변환
+        """
         bid_levels = list(range(1, 6))
         ask_levels = list(range(-5, 0))
         levels = bid_levels + ask_levels
@@ -62,6 +89,9 @@ class Simulator:
         return action
 
     def get_timing(self, observe, cut):
+        """
+        정해진 시점마다 주문을 넣기 위한 시그널 리턴
+        """
         hour = observe['system_time'].hour
         minute = observe['system_time'].minute
         minutes = 60 * hour + minute
@@ -72,6 +102,11 @@ class Simulator:
             return False
 
     def execution(self, price, volume, observe):
+        """
+        지정한 가격, 지정한 주문량을 
+        현재 호가창에서 체결 가능한, 유리한 호가부터 체결한 후
+        최종적인 체결 수량 및 체결 금액 계산
+        """
         order_volume = volume
         
         sell_tax = 0.003
@@ -104,12 +139,15 @@ class Simulator:
         return executed_volume, remain_volume, executed_price
     
     def play_horizon(self, config):
+        """
+        주문 집행 Horizon (H)에서 주문 집행 시뮬레이션
+        """
         
         waiting = config['waiting']
         time_cut = config['time_cut']
         target_volume = config['target_volume']
         minima_volume = config['minima_volume']
-        eps = 1.0
+
         cum_reward = 0
         sell_money = 0
         H = 300
@@ -118,7 +156,7 @@ class Simulator:
 
         for time in range(H):
             
-            eps *= 0.99999
+            self.eps *= 0.999999
             done = time // (H-1)
             base_volume = min(minima_volume, target_volume) 
 
@@ -146,7 +184,7 @@ class Simulator:
                 executed_at_mid = order['target'] * order['mid']
                 executed_price_cum = order['executed_price_cum'] + executed_price
                 
-                state = self.get_state(order['observe'])
+                state = self.get_state(order['observe']) 
                 next_state = self.get_state(order['observe_'])
                 action = self.level2action(order['level'])
                 reward = None
@@ -185,7 +223,7 @@ class Simulator:
                 state = self.get_state(observe) 
                 next_state = self.get_state(observe_)
 
-                action = self.get_action(state, eps) 
+                action = self.get_action(state, self.eps) 
                 level = self.action2level(action) if not done else 10
                 
                 limit_price = observe[f'ask{level}'] \
@@ -227,4 +265,4 @@ class Simulator:
                     
                     pending_orders.append(pending_order)
 
-        return sell_money, cum_reward
+        return sell_money, cum_reward, self.eps
