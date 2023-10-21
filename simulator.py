@@ -12,7 +12,7 @@ class Simulator:
     """
     eps = 1.0
     def __init__(self, qnet, buffer):
-        self.data = pd.read_csv('data.csv', index_col=0)
+        self.data = pd.read_csv('data/data.csv', index_col=0)
         self.data['system_time'] = pd.to_datetime(self.data['system_time'])
         self.qnet = qnet
         self.buffer = buffer
@@ -52,6 +52,9 @@ class Simulator:
     def get_action(self, state, eps):
         """
         epsilon-greedy에 따라 호가 level selection
+
+        level > 0 이면 ask side
+        level < 0 이면 bid side
         """
         state = torch.tensor(state).float()
         state = torch.unsqueeze(state, 0)
@@ -113,10 +116,10 @@ class Simulator:
         sell_fee = 0.015
         cost = sell_tax + sell_fee
 
-        volumes = np.array([observe[f'ask{i}_v'] for i in range(1, 11)])
-        prices = np.array([observe[f'ask{i}'] for i in range(1, 11)])
-        indice = np.where(prices <= price)[0]    
-        level = indice[-1] + 1 if len(indice) > 0 else 0
+        volumes = np.array([observe[f'bid{i}_v'] for i in range(1, 11)])
+        prices = np.array([observe[f'bid{i}'] for i in range(1, 11)])
+        indice = np.where(prices >= price)[0]    
+        level = indice[0] + 1 if len(indice) > 0 else 0
 
         executed_volumes = []
 
@@ -124,10 +127,10 @@ class Simulator:
         executed_volume = 0
         executed_volume = volume
 
-        volumes_ = volumes[:level]
-        prices_ = prices[:level]
+        volumes_ = volumes[level-1:]
+        prices_ = prices[level-1:]
                     
-        for i in range(level):
+        for i in range(len(volumes_)):
             executed_v = min(order_volume, volumes_[i])
             executed_volumes.append(executed_v)
             order_volume -= executed_v
@@ -156,7 +159,7 @@ class Simulator:
 
         for time in range(H):
             
-            self.eps *= 0.999999
+            self.eps *= 0.9999995
             done = time // (H-1)
             base_volume = min(minima_volume, target_volume) 
 
@@ -171,7 +174,7 @@ class Simulator:
                 order = pending_orders.pop(0)
                 term = time - order['time']
                     
-                price = observe['ask10'] if done else order['price']
+                price = observe['bid10'] if done else order['price']
                 result = self.execution(price, order['volume'], observe)
 
                 executed_volume = result[0] 
@@ -226,10 +229,10 @@ class Simulator:
                 action = self.get_action(state, self.eps) 
                 level = self.action2level(action) if not done else 10
                 
-                limit_price = observe[f'ask{level}'] \
-                    if level > 0 else observe[f'bid{abs(level)}']
-                limit_volume = observe[f'ask{level}_v'] \
-                    if level > 0 else observe[f'bid{abs(level)}_v']
+                limit_price = observe[f'bid{level}'] \
+                    if level > 0 else observe[f'ask{abs(level)}']
+                limit_volume = observe[f'bid{level}_v'] \
+                    if level > 0 else observe[f'ask{abs(level)}_v']
                 
                 result = self.execution(limit_price, base_volume, observe)
 

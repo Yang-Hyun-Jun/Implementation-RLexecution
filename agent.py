@@ -9,7 +9,7 @@ from simulator import Simulator
 
 class Agent:
     """
-    DQN Agent
+    Dueling DQN Agent
     """
     def __init__(self, s_dim, a_dim):
         
@@ -36,6 +36,14 @@ class Agent:
         self.opt.zero_grad()
         loss.backward()
         self.opt.step()
+
+        # Soft target update
+        tau = 0.005
+
+        for param, target_param in zip(self.qnet.parameters(), 
+                                       self.qnet_target.parameters()):
+            target_param.data.copy_(tau*param.data + (1-tau)*target_param.data)
+            
         return loss.item()
 
     def train(self, config):
@@ -45,34 +53,70 @@ class Agent:
         episode = config['episode']
         batch_size = config['batch_size']
 
-        score = 0
+        sell_money_ma = 0
+        sell_moneys = []
+        cum_rewards = []
+        losses = []
+
         for epi in range(episode):
             sell_money, cum_reward, eps = self.simul.play_horizon(config)
-            score += 0.01*(sell_money - score)
+            sell_money_ma += 0.01*(sell_money - sell_money_ma)
 
-            if len(self.buffer) > batch_size:
-                samples = self.buffer.sample(len(self.buffer))
-                batch = make_batch(samples)
-                loss = self.update(*batch)
+            samples = self.buffer.sample(min(batch_size, len(self.buffer)))
+            batch = make_batch(samples)
+            loss = self.update(*batch)
 
-                print(f'epi:{epi}')
-                print(f'loss:{loss}')
-                print(f'score:{score}')
-                print(f'eps:{eps}')
-                print(f'cum_reward:{cum_reward} \n')
+            sell_moneys.append(sell_money)
+            cum_rewards.append(cum_reward)
+            losses.append(loss)
+
+            print(f'epi:{epi}')
+            print(f'loss:{loss}')
+            print(f'score:{sell_money_ma}')
+            print(f'eps:{eps}')
+            print(f'cum_reward:{cum_reward}\n')
+
+        return sell_moneys, cum_rewards, losses
+        
 
 if __name__ == '__main__':
+
+    import pandas as pd
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--rand', type=int, default=1)
+    parser.add_argument('--waiting', type=int, default=20)
+    parser.add_argument('--time_cut', type=int, default=10)
+    parser.add_argument('--episode', type=int, default=20000)
+    parser.add_argument('--target_volume', type=int, default=30000)
+    parser.add_argument('--minima_volume', type=int, default=1000)
+    parser.add_argument('--batch_size', type=int, default=64)
+    args = parser.parse_args()
+
     s_dim = 23
     a_dim = 10
+    rand = args.rand
 
     config = {
-        'waiting': 20,
-        'time_cut': 10,
-        'target_volume': 30000,
-        'minima_volume': 1000,
-        'episode': 10000,
-        'batch_size': 64,
+        'waiting': args.waiting,
+        'time_cut': args.time_cut,
+        'target_volume': args.target_volume,
+        'minima_volume': args.minima_volume,
+        'episode': args.episode,
+        'batch_size': args.batch_size,
         }
 
     agent = Agent(s_dim, a_dim)
-    agent.train(config)
+    sell_moneys, cum_rewards, losses = agent.train(config)
+
+    pd.DataFrame({'sell_money':sell_moneys}).\
+        to_csv(f'result/seed{rand}/sell_money.csv')
+    pd.DataFrame({'cum_rewards':cum_rewards}).\
+        to_csv(f'result/seed{rand}/cum_rewards.csv')
+    pd.DataFrame({'losses':losses}).\
+        to_csv(f'result/seed{rand}/losses.csv')
+
+    
+
+
