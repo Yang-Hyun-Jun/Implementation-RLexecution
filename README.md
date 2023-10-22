@@ -45,6 +45,8 @@ agent.train(config)
 - bid-ask spread = best ask - best bid
 - mid price = (best ask + best bid) / 2
 - market imbalance = sum(bid volumes) - sum(ask volumes)
+- total bid volume = sum(bid volumes)
+- total ask volume = sum(ask volumes)
 - bid volumes
 - ask volumes
 
@@ -54,3 +56,4 @@ agent.train(config)
 
 ***Reward***
 - o(executed price - executed at midprice)
+- o : scaling function

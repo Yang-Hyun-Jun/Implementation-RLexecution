@@ -94,7 +94,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=64)
     args = parser.parse_args()
 
-    s_dim = 23
+    s_dim = 25
     a_dim = 10
     rand = args.rand
 

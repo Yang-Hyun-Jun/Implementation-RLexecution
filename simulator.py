@@ -46,7 +46,7 @@ class Simulator:
         ask_volume = sum(ask_volumes)
         bid_volume = sum(bid_volumes)
         imbalance = (bid_volume - ask_volume)
-        state = [bid_ask_spread, mid_price, imbalance] + volumes
+        state = [bid_ask_spread, mid_price, imbalance, bid_volume, ask_volume] + volumes
         return state
 
     def get_action(self, state, eps):
