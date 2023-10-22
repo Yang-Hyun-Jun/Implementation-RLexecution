@@ -159,7 +159,7 @@ class Simulator:
 
         for time in range(H):
             
-            self.eps *= 0.9999995
+            self.eps *= 0.9999999
             done = time // (H-1)
             base_volume = min(minima_volume, target_volume) 
 

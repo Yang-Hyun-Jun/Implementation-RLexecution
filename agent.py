@@ -43,7 +43,7 @@ class Agent:
         for param, target_param in zip(self.qnet.parameters(), 
                                        self.qnet_target.parameters()):
             target_param.data.copy_(tau*param.data + (1-tau)*target_param.data)
-            
+
         return loss.item()
 
     def train(self, config):
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     parser.add_argument('--rand', type=int, default=1)
     parser.add_argument('--waiting', type=int, default=20)
     parser.add_argument('--time_cut', type=int, default=10)
-    parser.add_argument('--episode', type=int, default=20000)
+    parser.add_argument('--episode', type=int, default=50000)
     parser.add_argument('--target_volume', type=int, default=30000)
     parser.add_argument('--minima_volume', type=int, default=1000)
     parser.add_argument('--batch_size', type=int, default=64)
@@ -109,6 +109,9 @@ if __name__ == '__main__':
 
     agent = Agent(s_dim, a_dim)
     sell_moneys, cum_rewards, losses = agent.train(config)
+    
+    torch.save(agent.qnet.state_dict(), 
+               f'result/seed{rand}/qnet.pth')
 
     pd.DataFrame({'sell_money':sell_moneys}).\
         to_csv(f'result/seed{rand}/sell_money.csv')
