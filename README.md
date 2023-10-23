@@ -6,7 +6,7 @@
 
 # Overview
 
-![](result/overview%20(1).png)
+![](result/overview_.png)
 
 # Results
 
