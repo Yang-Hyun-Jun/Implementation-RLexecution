@@ -17,7 +17,7 @@
 ![](result/output3.png)
 ![](result/output2.png)
 
-- 실험: 50000 epsiode 학습, 5 seed 병렬 학습 후 평균
+- 실험: 50000 epsiode 학습, 5 seed 병렬 학습 후 평균 플롯
 - Test1: TWAP 대비 **0.5841 %** 개선
 - Test2: TWAP 대비 **4.0236 %** 개선
 - Test3: TWAP 대비 **0.0050 %** 개선
