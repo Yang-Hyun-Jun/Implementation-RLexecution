@@ -14,6 +14,7 @@
 # Results
 
 ![](result/output.png)
+![](result/output3.png)
 ![](result/output2.png)
 
 - Test1: TWAP 대비 **0.5841 %** 개선
