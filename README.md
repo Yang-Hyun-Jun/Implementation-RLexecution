@@ -1,7 +1,7 @@
 # Execution Optimization using Dueling DQN
 - price level placement를 최적화화도록 강화학습
 - market state만 사용 (주문 시점, 주문 수량은 고정)
-- 주문 1분 후에는 주문에 대한 market impact가 사라진다고 가정
+- **주문 1분 후에는 주문에 대한 market impact가 사라진다고 가정**
 - Time weighted average price를 벤치마크로 사용 
 - Bitcoin limit order book data를 사용 <br>
 
