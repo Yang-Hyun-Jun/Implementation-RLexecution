@@ -28,4 +28,3 @@ class Qnet(nn.Module):
        adv_mean = torch.mean(adv, dim=1, keepdim=True)
        q = val + adv - adv_mean
        return q
-    
