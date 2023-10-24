@@ -16,12 +16,16 @@
 ![](result/output.png)
 ![](result/output2.png)
 
+- Test1: BM 대비 **0.5841 %** 개선
+- Test2: BM 대비 **4.0236 %** 개선
+- Test3: BM 대비 **0.0050 %** 개선
+
 ***코드 실행***
 
     # Run Felector algorithm
     python agent.py
 
-
+- Test1: RL-BM = 
 ```python
 """
 학습을 위한 코드 작성
