@@ -95,7 +95,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     s_dim = 23
-    a_dim = 10
+    a_dim = 20
     rand = args.rand
 
     config = {

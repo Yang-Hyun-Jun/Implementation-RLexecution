@@ -16,6 +16,7 @@ class Simulator:
         self.data['system_time'] = pd.to_datetime(self.data['system_time'])
         self.qnet = qnet
         self.buffer = buffer
+        self.deep = 10
 
     def get_reward(self, executed_at_mid, executed_price):
         """
@@ -63,7 +64,7 @@ class Simulator:
         prob = torch.tensor(prob).float()
 
         if prob <= eps:
-            action = np.random.choice(range(10))
+            action = np.random.choice(range(2*self.deep))
             return action
 
         q_value = self.qnet(state).detach()
@@ -75,9 +76,8 @@ class Simulator:
         """
         action (index)를 level로 변환 
         """
-        deep = 10
-        bid_levels = list(range(1, deep+1))
-        ask_levels = list(range(-deep, 0))
+        bid_levels = list(range(1, self.deep+1))
+        ask_levels = list(range(-self.deep, 0))
         levels = bid_levels + ask_levels
         level = levels[action]
         return level
@@ -86,9 +86,8 @@ class Simulator:
         """ 
         level을 action (index)로 변환
         """
-        deep = 10
-        bid_levels = list(range(1, deep+1))
-        ask_levels = list(range(-deep, 0))
+        bid_levels = list(range(1, self.deep+1))
+        ask_levels = list(range(-self.deep, 0))
         levels = bid_levels + ask_levels
         action = levels.index(level)
         return action
