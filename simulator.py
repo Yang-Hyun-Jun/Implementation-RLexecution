@@ -75,7 +75,7 @@ class Simulator:
         """
         action (index)를 level로 변환 
         """
-        deep = 5
+        deep = 10
         bid_levels = list(range(1, deep+1))
         ask_levels = list(range(-deep, 0))
         levels = bid_levels + ask_levels
@@ -86,7 +86,7 @@ class Simulator:
         """ 
         level을 action (index)로 변환
         """
-        deep = 5 
+        deep = 10
         bid_levels = list(range(1, deep+1))
         ask_levels = list(range(-deep, 0))
         levels = bid_levels + ask_levels
