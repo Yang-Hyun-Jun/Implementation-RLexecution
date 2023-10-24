@@ -62,7 +62,7 @@ agent.train(config)
 - bid volumes
 - ask volumes
 
-***Actio Space***
+***Action Space***
 - Bid price level (1~5)
 - Ask price level (-5 ~ -1)
 
