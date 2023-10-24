@@ -16,9 +16,9 @@
 ![](result/output.png)
 ![](result/output2.png)
 
-- Test1: BM 대비 **0.5841 %** 개선
-- Test2: BM 대비 **4.0236 %** 개선
-- Test3: BM 대비 **0.0050 %** 개선
+- Test1: TWAP 대비 **0.5841 %** 개선
+- Test2: TWAP 대비 **4.0236 %** 개선
+- Test3: TWAP 대비 **0.0050 %** 개선
 
 ***코드 실행***
 
