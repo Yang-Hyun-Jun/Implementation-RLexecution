@@ -27,7 +27,6 @@
     # Run Felector algorithm
     python agent.py
 
-- Test1: RL-BM = 
 ```python
 """
 학습을 위한 코드 작성
