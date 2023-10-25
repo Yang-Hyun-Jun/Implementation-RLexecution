@@ -3,7 +3,7 @@
 - market state만 사용 (TWAP과 동일하게 주문 시점, 주문 수량은 고정)
 - **주문 1분 후에는 주문에 대한 market impact가 사라진다고 가정**
 - Time weighted average price를 벤치마크로 사용 
-- Bitcoin limit order book data를 사용 
+- BTC/USDT limit order book data를 사용 
 - 한번 주문시 1000개 (bid side total volume 평균 대비 약 5%)
 - Target volume = 30000 <br>
 
