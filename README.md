@@ -24,7 +24,7 @@
 
 ***코드 실행***
 
-    # Run Felector algorithm
+    # Run Deuling DQN algorithm
     python agent.py
 
 ```python
